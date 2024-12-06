@@ -1,11 +1,15 @@
 <template>
   <div class="wrapper">
     <h1> Знаю погоду не смотря в окно </h1>
-    <p> Покажем погоду в {{ city == "" ? "вашем городе" :city}} </p>
+    <p> Покажем погоду в {{ city == "" ? "вашем городе" : "`" + city + "`" }} </p>
 
     <input type="text" placeholder="Москва" v-model="city">
-    <button v-if="city!=''"> Узнать погоду </button>
+
+    <button v-if="city!=''" @click="getWeather()"> Узнать погоду </button>
     <button disabled v-else=""> Укажите город </button>
+
+    <p class="error"> {{ error }} </p>
+    <p v-show="info != null"> {{ info }} </p>
   </div>
 </template>
 
@@ -57,13 +61,40 @@
   .wrapper button:hover{
     transform: scale(1.1) translateY(-3px);
   }
+
+  .wrapper button:disabled{
+    background: #746027;
+    cursor: not-allowed;
+    transition: none;
+    transform: none;
+  }
+
+  .error{
+    color: #d03939;
+  }
 </style>
 
 <script>
+  import axios from "axios"
   export default {
     data(){
       return{
-        city: ""
+        city: "",
+        error: "",
+        info: null,
+      }
+    },
+
+    methods:{
+      getWeather(){
+        if(this.city.trim().length < 2){
+          this.error = "Назание города не может состоять из одной буквы!"
+          return false
+        }
+        this.error = ""
+
+        axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${this.city}&units=metric&appid=cdca4b86caa7b78c15d54a79c440233b`)
+          .then(res => (this.info = res))
       }
     }
   };
